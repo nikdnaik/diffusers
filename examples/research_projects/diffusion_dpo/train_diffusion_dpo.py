@@ -60,13 +60,19 @@ check_min_version("0.25.0.dev0")
 
 logger = get_logger(__name__)
 
+# VALIDATION_PROMPTS = [
+#     "portrait photo of a girl, photograph, highly detailed face, depth of field, moody light, golden hour, style by Dan Winters, Russell James, Steve McCurry, centered, extremely detailed, Nikon D850, award winning photography",
+#     "Self-portrait oil painting, a beautiful cyborg with golden hair, 8k",
+#     "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k",
+#     "A photo of beautiful mountain with realistic sunset and blue lake, highly detailed, masterpiece",
+# ]
 
 VALIDATION_PROMPTS = [
-    "portrait photo of a girl, photograph, highly detailed face, depth of field, moody light, golden hour, style by Dan Winters, Russell James, Steve McCurry, centered, extremely detailed, Nikon D850, award winning photography",
-    "Self-portrait oil painting, a beautiful cyborg with golden hair, 8k",
-    "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k",
-    "A photo of beautiful mountain with realistic sunset and blue lake, highly detailed, masterpiece",
-]
+    "A book design with a title text of 'South Australia and Federation'",
+    "A TV show poster with text 'SEE YOU AROUND  on it'",
+    "A book with text 'The Sun in the Morning' on it",
+    "A poster design with a title text of 'Tokyo Halloween Night'",
+    "A book cover with a title text of 'The strategy of political revolution'"]
 
 
 def import_model_class_from_model_name_or_path(pretrained_model_name_or_path: str, revision: str):
