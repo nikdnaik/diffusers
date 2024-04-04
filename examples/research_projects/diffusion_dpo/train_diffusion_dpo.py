@@ -879,9 +879,14 @@ def main():
 
                 model_w_diff = model_losses_w - ref_losses_w
                 model_w_diff_mean = model_w_diff.mean()
+                model_losses_w_mean = model_losses_w.mean()
+                ref_losses_w_mean = ref_losses_w.mean()
+
 
                 model_l_diff = model_losses_l - ref_losses_l
                 model_l_diff_mean = model_l_diff.mean()
+                model_losses_l_mean = model_losses_l.mean()
+                ref_losses_l_mean = ref_losses_l.mean()
                 
 
                 # Final loss.
@@ -944,10 +949,14 @@ def main():
 
             logs = {
                 "loss": loss.detach().item(),
-                "raw_model_loss": raw_model_loss.detach().item(),
-                "ref_loss": raw_ref_loss.detach().item(),
+                # "raw_model_loss": raw_model_loss.detach().item(),
+                # "ref_loss": raw_ref_loss.detach().item(),
                 "model_w_loss_diff": model_w_diff_mean.detach().item(),
                 "model_l_loss_diff": model_l_diff_mean.detach().item(),
+                "model_losses_w_mean": model_losses_w_mean.detach().item(),
+                "model_losses_l_mean": model_losses_l_mean.detach().item(),
+                "ref_losses_w_mean": ref_losses_w_mean.detach().item(),
+                "ref_losses_l_mean": ref_losses_l_mean.detach().item(),
                 "implicit_acc": implicit_acc.detach().item(),
                 "lr": lr_scheduler.get_last_lr()[0],
 
