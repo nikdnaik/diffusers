@@ -492,10 +492,6 @@ def main():
         project_config=accelerator_project_config,
     )
 
-    # Disable AMP for MPS.
-    if torch.backends.mps.is_available():
-        accelerator.native_amp = False
-
     # Make one log on every process with the configuration for debugging.
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -881,6 +877,13 @@ def main():
                 # Re-enable adapters.
                 accelerator.unwrap_model(unet).enable_adapters()
 
+                model_w_diff = model_losses_w - ref_losses_w
+                model_w_diff_mean = model_w_diff.mean()
+
+                model_l_diff = model_losses_l - ref_losses_l
+                model_l_diff_mean = model_l_diff.mean()
+                
+
                 # Final loss.
                 logits = ref_diff - model_diff
                 if args.loss_type == "sigmoid":
@@ -943,8 +946,11 @@ def main():
                 "loss": loss.detach().item(),
                 "raw_model_loss": raw_model_loss.detach().item(),
                 "ref_loss": raw_ref_loss.detach().item(),
+                "model_w_loss_diff": model_w_diff_mean.detach().item(),
+                "model_l_loss_diff": model_l_diff_mean.detach().item(),
                 "implicit_acc": implicit_acc.detach().item(),
                 "lr": lr_scheduler.get_last_lr()[0],
+
             }
             progress_bar.set_postfix(**logs)
             accelerator.log(logs, step=global_step)

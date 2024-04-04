@@ -17,14 +17,15 @@ from modal import (
     method,
 )
 
-GIT_SHA = "5784797c5502e5308a4eaaae705830ff1350eb18"
+GIT_SHA = "53c508af53870b16910e658c8440dce80e1e5565"
+# "5784797c5502e5308a4eaaae705830ff1350eb18" # previous workin sha
 
 image = (
     Image.debian_slim(python_version="3.10")
     .pip_install(
         "accelerate==0.21.0",
         "datasets~=2.17.1",
-        "diffusers==0.25.0",
+        "diffusers",
         "ftfy~=6.1.1",
         "gradio~=3.50.2",
         "smart_open~=6.4.0",
@@ -77,7 +78,7 @@ training_data_volume = Volume.from_name(
     "diffusers-training-data-volume", create_if_missing=True
 )
 model_volume = Volume.from_name(
-    "diffusers-model-volume", create_if_missing=True
+    "text_diffuser_MARIOEval_2000_steps_lr_1e-6_beta_5000", create_if_missing=True
 )
 
 VOLUME_CONFIG = {
@@ -102,30 +103,30 @@ class TrainConfig:
     # HuggingFace Hub dataset
     dataset_name = "nikdnaik/MARIOEval" #"kashif/pickascore"
     dataset_split_name = "train" #"validation" for #kashif
-    logging_dir = "log_MARIOEval_100_steps"
+    logging_dir = "log_MARIOEval_2000_steps_lr_1e-6_beta_5000"
 
     mixed_precision: str = 'fp16'  # set the precision of floats during training, fp16 or less needs to be mixed with fp32 under the hood
     resolution: int = 512  # how big should the generated images be?
-    max_train_steps: int = 100  # number of times to apply a gradient update during training -- increase for better results on the heroicon dataset
-    checkpointing_steps: int = 20
-    train_batch_size: int = 128 #8
+    max_train_steps: int = 2000  # number of times to apply a gradient update during training -- increase for better results on the heroicon dataset
+    checkpointing_steps: int = 100
+    train_batch_size: int = 64 #8
     gradient_accumulation_steps: int = 1  
 
-    learning_rate: float = 1e-05  # scaling factor on gradient updates, make this proportional to the batch size * accumulation steps
+    learning_rate: float = 1e-06  # scaling factor on gradient updates, make this proportional to the batch size * accumulation steps
     lr_scheduler: str = (
-        "constant_with_warmup"  # dynamic schedule for changes to the base learning_rate
+        "constant"  # dynamic schedule for changes to the base learning_rate
     )
 
     lr_warmup_steps: int = 0  # for non-constant lr schedules, how many steps to spend increasing the learning_rate from a small initial value
     max_grad_norm: int = (
         1  # value above which to clip gradients, stabilizes training
     )
-    caption_column: str = "text"  # name of the column in the dataset that contains the captions of the images
-    validation_prompt: str = "an icon of a dragon creature"
-
-    validation_steps: int = 20
+    
+    validation_steps: int = 100
 
     seed: str = '0'
+
+    beta_dpo: int = 5000
 
 
 @dataclass
@@ -148,7 +149,7 @@ class AppConfig:
     gpu=gpu.A100(size="80GB"),  # finetuning is VRAM hungry, so this should be an A100 or H100
     volumes=VOLUME_CONFIG,
     _allow_background_volume_commits=True,  # enables saving of larger files on Modal Volumes
-    timeout=60 * 60 * 2,  # two hours, for longer training jobs
+    timeout=60 * 60 * 6,  # two hours, for longer training jobs
     secrets=[Secret.from_name("nn-huggingface-secret"), Secret.from_name("nn-github-secret")],
 )
 # ## Define the training function
@@ -207,6 +208,8 @@ def train():
             f"--validation_steps={config.validation_steps}",
             f"--seed={config.seed}",
             f"--logging_dir={config.logging_dir}",
+            f"--beta_dpo={config.beta_dpo}",
+            # f"--resume_from_checkpoint={config.resume_from_checkpoint}",
             # f"--report_to=\"wandb\"",
             # f"--push_to_hub",
         ]
